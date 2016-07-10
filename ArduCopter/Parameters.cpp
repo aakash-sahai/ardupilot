@@ -1076,6 +1076,55 @@ const AP_Param::Info Copter::var_info[] PROGMEM = {
     // @User: Standard
     GSCALAR(autotune_min_d, "AUTOTUNE_MIN_D", 0.004f),
 
+    // @Param: TL_DURATION_BURN
+    // @DisplayName: TerraLander - Disengament Chord Burn Duration
+    // @Description: TerraLander Mode - Duration for which to burn the various disengament nylon chords (in msec)
+    // @Range: 0 2000
+    // @User: Advanced
+    GSCALAR(tl_duration_burn, "TL_DURATION_BURN", 1000),
+
+    // @Param: TL_DELAY_MOT_ARM
+    // @DisplayName: TerraLander - Motor Arming Delay
+    // @Description: TerraLander Mode - Delay between disengament and arming of motors (in msec)
+    // @Range: 0 2000
+    // @User: Advanced
+    GSCALAR(tl_delay_motor_arm, "TL_DELAY_MOT_ARM", 2000),
+
+    // @Param: TL_ALT_INT_INTVL
+    // @DisplayName: TerraLander - Altitude Inetgration Interval
+    // @Description: TerraLander Mode - Number of fast loop iterations over which altitude must meet the condition to switch to next state (1/400 seconds)
+    // @Range: 0 400
+    // @User: Advanced
+    GSCALAR(tl_alt_integ_interval, "TL_ALT_INT_INTVL", 100),
+
+    // @Param: TL_ALT_IN_FLIGHT
+    // @DisplayName: TerraLander - Altitude In-flight Delta
+    // @Description: TerraLander Mode -  The delta altitude above starting altitude that governs when we consider ourselves in-flight (in cm)
+    // @Range: 0 60000
+    // @User: Advanced
+    GSCALAR(tl_alt_in_flight_delta, "TL_ALT_IN_FLIGHT", 10000),
+
+    // @Param: TL_ALT_PAST_APOG
+    // @DisplayName: TerraLander - Altitude Past-Apogee Delta
+    // @Description: TerraLander Mode -  The delta altitude below max achieved altitude that governs when we consider ourselves past apogeee (in cm)
+    // @Range: 0 60000
+    // @User: Advanced
+    GSCALAR(tl_alt_past_apogee_delta, "TL_ALT_PAST_APOG", 40000),
+
+    // @Param: TL_ALT_DISENGAGE
+    // @DisplayName: TerraLander - Altitude Disengage Delta
+    // @Description: TerraLander Mode -  The delta altitude above starting altitude that governs when we eject from piston and start controlled flight (in cm)
+    // @Range: 0 60000
+    // @User: Advanced
+    GSCALAR(tl_alt_disengage_delta, "TL_ALT_DISENGAGE", 30480),
+
+    // @Param: TL_RVR_LND_TMOUT
+    // @DisplayName: TerraLander - Rover Landing Timeout
+    // @Description: TerraLander Mode -  Maximum time to wait for Rover to land (in msec)
+    // @Range: 0 60000
+    // @User: Advanced
+    GSCALAR(tl_rover_land_timeout, "TL_RVR_LND_TMOUT", 20000),
+
     AP_VAREND
 };
 

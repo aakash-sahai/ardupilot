@@ -172,6 +172,14 @@ public:
         k_param_motors = 90,
         k_param_disarm_delay,
 
+        // 92: TerraLander
+        k_param_tl_duration_burn = 92,
+        k_param_tl_delay_motor_arm,
+        k_param_tl_alt_integ_interval,
+        k_param_tl_alt_in_flight_delta,
+        k_param_tl_alt_past_apogee_delta,
+        k_param_tl_alt_disengage_delta,
+        k_param_tl_rover_land_timeout,       // 98
         //
         // 100: Inertial Nav
         //
@@ -381,13 +389,13 @@ public:
     AP_Int16        rtl_climb_min;              // rtl minimum climb in cm
 
     AP_Int8         rssi_pin;
-    AP_Float        rssi_range;                 // allows to set max voltage for rssi pin such as 5.0, 3.3 etc. 
+    AP_Float        rssi_range;                 // allows to set max voltage for rssi pin such as 5.0, 3.3 etc.
     AP_Int8         wp_yaw_behavior;            // controls how the autopilot controls yaw during missions
     AP_Int8         rc_feel_rp;                 // controls vehicle response to user input with 0 being extremely soft and 100 begin extremely crisp
 
     AP_Int16        poshold_brake_rate;         // PosHold flight mode's rotation rate during braking in deg/sec
     AP_Int16        poshold_brake_angle_max;    // PosHold flight mode's max lean angle during braking in centi-degrees
-    
+
     // Waypoints
     //
     AP_Int32        rtl_loiter_time;
@@ -506,6 +514,14 @@ public:
     AP_Float                autotune_aggressiveness;
     AP_Float                autotune_min_d;
 
+    AP_Int16                tl_duration_burn;
+    AP_Int16                tl_delay_motor_arm;
+    AP_Int16                tl_alt_integ_interval;
+    AP_Int32                tl_alt_in_flight_delta;
+    AP_Int32                tl_alt_past_apogee_delta;
+    AP_Int32                tl_alt_disengage_delta;
+    AP_Int32                tl_rover_land_timeout;
+
     // Note: keep initializers here in the same order as they are declared
     // above.
     Parameters() :
@@ -581,4 +597,3 @@ public:
 extern const AP_Param::Info        var_info[];
 
 #endif // PARAMETERS_H
-

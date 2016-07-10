@@ -5,20 +5,6 @@
 #define RELAY_PISTON_DISENGAGE     0
 #define RELAY_ROVER_DISENGAGE      1
 #define RELAY_SKYCRANE_DISENGAGE   2
-#define RELAY_ON_DELAY             2000   // Delay to keep the relay on - 2 second
-#define ROVER_LAND_DELAY           20000  // Time to wait for Rover to land - 20 seconds
-#define MOTOR_ON_DELAY             1000   // Time to turn the motors on - 1 second
-
-#define ALT_DISENGAGE_PISTON       20000  // The delta altitude (in cm) above starting altitude
-                                          // that dictates when we eject from piston - 200 meters
-#define ALT_DELTA_IN_FLIGHT        10000  // The delta altitude (in cm) above starting altitude
-                                          // that dictates when we consider ourselves in-flight - 100 meters
-#define ALT_DELTA_PAST_APOGEE      50000  // The delta altitude (in cm) below max altitude
-                                          // that dictates when we consider ourselves past apogeee  - 500 meters
-
-#define ALT_INTEGRATION_INTERVAL   100    // number of cycles for which alt has to stay above
-                                          // threshold to be considered robust for making any state
-                                          // change decision (false-positive protection mechanism)
 
 /*
  * control_terra_lender.pde - init and run calls for TerraLander flight mode
@@ -224,7 +210,7 @@ void Copter::terra_lander_ejectFromPiston_start() // COMPLETE
  */
  ServoRelayEvents.do_set_relay(RELAY_PISTON_DISENGAGE, 1);
  condition_start = millis();
- condition_value = RELAY_ON_DELAY;
+ condition_value = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_freeFall_start() // COMPLETE
@@ -235,7 +221,7 @@ void Copter::terra_lander_freeFall_start() // COMPLETE
  * from the descending Piston
  */
  condition_start = millis();
- condition_value = MOTOR_ON_DELAY;
+ condition_value = g.tl_delay_motor_arm;
 }
 
 void Copter::terra_lander_stabilize_start() // COMPLETE
@@ -274,17 +260,17 @@ void Copter::terra_lander_roverDisengage_start() // COMPLETE
  loiter_init(true);
  ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, 1);
  condition_start = millis();
- condition_value = RELAY_ON_DELAY;
+ condition_value = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_roverLand_start()  // COMPLETE
 {
   gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Free Fall State\n"));
 /*
- * Start the ROVER_LAND_DELAY timer and let the Rover lower itself
+ * Start the g.tl_rover_land_timeout timer and let the Rover lower itself
  */
  condition_start = millis();
- condition_value = ROVER_LAND_DELAY;
+ condition_value = g.tl_rover_land_timeout;
 }
 
 void Copter::terra_lander_skyCraneDisengage_start()
@@ -295,7 +281,7 @@ void Copter::terra_lander_skyCraneDisengage_start()
  */
  ServoRelayEvents.do_set_relay(RELAY_SKYCRANE_DISENGAGE, 1);
  condition_start = millis();
- condition_value = RELAY_ON_DELAY;
+ condition_value = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_flyToLanderHome_start()
@@ -333,19 +319,19 @@ void Copter::terra_lander_standby_run()
 void Copter::terra_lander_readyForTakeoff_run()
 {
 /*
- * Wait until the Altitude increases by ALT_DELTA_IN_FLIGHT+ cms for
- * ALT_INTEGRATION_INTERVAL cycles indicating we are in flight
+ * Wait until the Altitude increases by g.tl_alt_in_flight_delta+ cms for
+ * g.tl_alt_integ_interval cycles indicating we are in flight
  */
  static int count = 0;
  float alt = inertial_nav.get_altitude();
  terra_lander_max_alt = max(alt, terra_lander_max_alt);
  float deltaAlt = alt - terra_lander_alt;
- if (deltaAlt > ALT_DELTA_IN_FLIGHT) {
+ if (deltaAlt > g.tl_alt_in_flight_delta) {
    count++;
  } else {
    count = 0;
  }
- if (count > ALT_INTEGRATION_INTERVAL) {
+ if (count > g.tl_alt_integ_interval) {
    terra_lander_state_complete = true;
  }
 }
@@ -353,19 +339,19 @@ void Copter::terra_lander_readyForTakeoff_run()
 void Copter::terra_lander_inFlight_run()
 {
 /*
- * Keep tab on maximum altitude until altitude decreases by ALT_DELTA_PAST_APOGEE+ cm
- * for ALT_INTEGRATION_INTERVAL cycles indicating we are past the apogee
+ * Keep tab on maximum altitude until altitude decreases by g.tl_alt_past_apogee_delta+ cm
+ * for g.tl_alt_integ_interval cycles indicating we are past the apogee
  */
  static int count = 0;
  float alt = inertial_nav.get_altitude();
  terra_lander_max_alt = max(alt, terra_lander_max_alt);
  float deltaAlt = terra_lander_max_alt - alt;
- if (deltaAlt > ALT_DELTA_PAST_APOGEE) {
+ if (deltaAlt > g.tl_alt_past_apogee_delta) {
    count++;
  } else {
    count = 0;
  }
- if (count > ALT_INTEGRATION_INTERVAL) {
+ if (count > g.tl_alt_integ_interval) {
    terra_lander_state_complete = true;
  }
 }
@@ -375,12 +361,12 @@ void Copter::terra_lander_pastApogee_run()
   static int count = 0;
   float alt = inertial_nav.get_altitude();
   float deltaAlt = alt - terra_lander_alt;
-  if (deltaAlt > ALT_DISENGAGE_PISTON) {
+  if (deltaAlt > g.tl_alt_disengage_delta) {
     count++;
   } else {
     count = 0;
   }
-  if (count > ALT_INTEGRATION_INTERVAL) {
+  if (count > g.tl_alt_integ_interval) {
     if (gps.status() >= AP_GPS::GPS_OK_FIX_2D) {
       terra_lander_state_complete = true;
     }
@@ -452,7 +438,7 @@ void Copter::terra_lander_roverLand_run() // COMPLETE
 {
 /*
  * Continue running the LOITER mode.
- * For now, wait for ROVER_LAND_DELAY
+ * For now, wait for g.tl_rover_land_timeout
  * TBD: Wait until touchdown switch is detected to be open
  */
  loiter_run();
