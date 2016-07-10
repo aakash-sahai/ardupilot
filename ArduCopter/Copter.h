@@ -334,6 +334,11 @@ private:
     bool rtl_state_complete; // set to true if the current state is completed
     float rtl_alt;     // altitude the vehicle is returning at
 
+    TerraLanderState terra_lander_state; // Records state of Terra land_accel_ef_filter
+    bool terra_lander_state_complete; // Set to true if the current state is completed
+    float terra_lander_alt; // altitude the lander is returning at
+    float terra_lander_max_alt; // Max altitude recorded during the flight
+
     // Circle
     bool circle_pilot_yaw_override; // true if pilot is overriding yaw
 
@@ -991,6 +996,40 @@ public:
     int8_t test_sonar(uint8_t argc, const Menu::arg *argv);
 
     int8_t reboot_board(uint8_t argc, const Menu::arg *argv);
+
+    bool terra_lander_init(bool ignore_checks);
+    void terra_lander_run();
+    uint8_t terra_lander_effective_mode();
+
+    void terra_lander_standby_start();
+    void terra_lander_readyForTakeoff_start();
+    void terra_lander_inFlight_start();
+    void terra_lander_pastApogee_start();
+    void terra_lander_ejectFromPiston_start();
+    void terra_lander_freeFall_start();
+    void terra_lander_stabilize_start();
+    void terra_lander_flyToRoverHome_start();
+    void terra_lander_roverDisengage_start();
+    void terra_lander_roverLand_start();
+    void terra_lander_skyCraneDisengage_start();
+    void terra_lander_flyToLanderHome_start();
+    void terra_lander_landing_start();
+    void terra_lander_landed_start();
+
+    void terra_lander_standby_run();
+    void terra_lander_readyForTakeoff_run();
+    void terra_lander_inFlight_run();
+    void terra_lander_pastApogee_run();
+    void terra_lander_ejectFromPiston_run();
+    void terra_lander_freeFall_run();
+    void terra_lander_stabilize_run();
+    void terra_lander_flyToRoverHome_run();
+    void terra_lander_roverDisengage_run();
+    void terra_lander_roverLand_run();
+    void terra_lander_skyCraneDisengage_run();
+    void terra_lander_flyToLanderHome_run();
+    void terra_lander_landing_run();
+    void terra_lander_landed_run();
 };
 
 #define MENU_FUNC(func) FUNCTOR_BIND(&copter, &Copter::func, int8_t, uint8_t, const Menu::arg *)

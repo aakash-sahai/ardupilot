@@ -20,6 +20,7 @@ void Copter::failsafe_radio_on_event()
             // if throttle is zero OR vehicle is landed disarm motors
             if (ap.throttle_zero || ap.land_complete) {
                 init_disarm_motors();
+                gcs_send_text_P(SEVERITY_HIGH,PSTR("STABILIZE|ACRO: THR zero || LAND Complete Disarm\n"));
 
             // if failsafe_throttle is FS_THR_ENABLED_ALWAYS_LAND then land immediately
             }else if(g.failsafe_throttle == FS_THR_ENABLED_ALWAYS_LAND) {
@@ -40,6 +41,7 @@ void Copter::failsafe_radio_on_event()
             // if mission has not started AND vehicle is landed, disarm motors
             if (!ap.auto_armed && ap.land_complete) {
                 init_disarm_motors();
+                gcs_send_text_P(SEVERITY_HIGH,PSTR("AUTO: !AUTOARMED && LAND Complete Disarm\n"));
 
             // if failsafe_throttle is FS_THR_ENABLED_ALWAYS_LAND then land immediately
             } else if(g.failsafe_throttle == FS_THR_ENABLED_ALWAYS_LAND) {
@@ -69,6 +71,7 @@ void Copter::failsafe_radio_on_event()
             // if landed disarm
             if (ap.land_complete) {
                 init_disarm_motors();
+                gcs_send_text_P(SEVERITY_HIGH,PSTR("OTHER: LAND Complete Disarm\n"));
 
             // if failsafe_throttle is FS_THR_ENABLED_ALWAYS_LAND then land immediately
             } else if(g.failsafe_throttle == FS_THR_ENABLED_ALWAYS_LAND) {
@@ -277,4 +280,3 @@ void Copter::update_events()
 {
     ServoRelayEvents.update_events();
 }
-

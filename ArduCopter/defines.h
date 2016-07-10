@@ -101,7 +101,8 @@ enum autopilot_modes {
     FLIP =         14,  // automatically flip the vehicle on the roll axis
     AUTOTUNE =     15,  // automatically tune the vehicle's roll and pitch gains
     POSHOLD =      16,  // automatic position hold with manual override, with automatic throttle
-    BRAKE =        17   // full-brake using inertial/GPS system, no pilot input
+    BRAKE =        17,  // full-brake using inertial/GPS system, no pilot input
+    TERRA_LANDER = 18   // Terra Lander mode
 };
 
 // Tuning enumeration
@@ -222,6 +223,24 @@ enum FlipState {
     Flip_Pitch_B,
     Flip_Recover,
     Flip_Abandon
+};
+
+// TerraLander states
+enum TerraLanderState {
+    TerraLander_Standby,
+    TerraLander_ReadyForTakeoff,
+    TerraLander_InFlight,
+    TerraLander_PastApogee,
+    TerraLander_EjectFromPiston,
+    TerraLander_FreeFall,
+    TerraLander_Stabilize,
+    TerraLander_FlyToRoverHome,
+    TerraLander_RoverDisengage,
+    TerraLander_RoverLand,
+    TerraLander_SkyCraneDisengage,
+    TerraLander_FlyToLanderHome,
+    TerraLander_Landing,
+    TerraLander_Landed
 };
 
 // LAND state
