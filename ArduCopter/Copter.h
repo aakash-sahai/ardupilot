@@ -411,6 +411,9 @@ private:
     int32_t condition_value;  // used in condition commands (eg delay, change alt, etc.)
     uint32_t condition_start;
 
+    int32_t tl_delay_duration;
+    uint32_t tl_millis;
+
     // IMU variables
     // Integration time (in seconds) for the gyros (DCM algorithm)
     // Updated with the fast loop

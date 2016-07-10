@@ -212,8 +212,8 @@ void Copter::terra_lander_ejectFromPiston_start() // COMPLETE
  * Turn on the RELAY_PISTON_DISENGAGE and start the timer to turn it off
  */
  ServoRelayEvents.do_set_relay(RELAY_PISTON_DISENGAGE, RELAY_ON);
- condition_start = millis();
- condition_value = g.tl_duration_burn;
+ tl_millis = millis();
+ tl_delay_duration = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_freeFall_start() // COMPLETE
@@ -223,8 +223,8 @@ void Copter::terra_lander_freeFall_start() // COMPLETE
  * Start the timer to let TerraLander free fall to let it free fall to steer away
  * from the descending Piston
  */
- condition_start = millis();
- condition_value = g.tl_delay_motor_arm;
+ tl_millis = millis();
+ tl_delay_duration = g.tl_delay_motor_arm;
 }
 
 void Copter::terra_lander_stabilize_start() // COMPLETE
@@ -236,8 +236,8 @@ void Copter::terra_lander_stabilize_start() // COMPLETE
  failsafe_disable();
  ahrs.set_correct_centrifugal(true);
  hal.util->set_soft_armed(true);
- enable_motor_output();
- motors.armed(true);
+ //enable_motor_output();
+ //motors.armed(true);
  althold_init(true);
  failsafe_enable();
 }
@@ -262,8 +262,8 @@ void Copter::terra_lander_roverDisengage_start() // COMPLETE
  */
  loiter_init(true);
  ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, RELAY_ON);
- condition_start = millis();
- condition_value = g.tl_duration_burn;
+ tl_millis = millis();
+ tl_delay_duration = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_roverLand_start()  // COMPLETE
@@ -272,8 +272,8 @@ void Copter::terra_lander_roverLand_start()  // COMPLETE
 /*
  * Start the g.tl_rover_land_timeout timer and let the Rover lower itself
  */
- condition_start = millis();
- condition_value = g.tl_rover_land_timeout;
+ tl_millis = millis();
+ tl_delay_duration = g.tl_rover_land_timeout;
 }
 
 void Copter::terra_lander_skyCraneDisengage_start()
@@ -283,8 +283,8 @@ void Copter::terra_lander_skyCraneDisengage_start()
  * Turn on the SkyCrane Separation Relay (#3) and start the timer to turn it off
  */
  ServoRelayEvents.do_set_relay(RELAY_SKYCRANE_DISENGAGE, RELAY_ON);
- condition_start = millis();
- condition_value = g.tl_duration_burn;
+ tl_millis = millis();
+ tl_delay_duration = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_flyToLanderHome_start()
@@ -382,8 +382,8 @@ void Copter::terra_lander_ejectFromPiston_run()
  * Wait for timer to expire to turn off Relay RELAY_PISTON_DISENGAGE.
  * TBD: Check the switch to make sure we have disengaged from piston
  */
- if (millis() - condition_start > (uint32_t)max(condition_value, 0)) {
-   condition_value = 0;
+ if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
+   tl_delay_duration = 0;
    ServoRelayEvents.do_set_relay(RELAY_PISTON_DISENGAGE, RELAY_OFF);
    terra_lander_state_complete = true;
  }
@@ -394,8 +394,8 @@ void Copter::terra_lander_freeFall_run() // COMPLETE
 /*
  * Wait for Motor start timer to expire.
  */
- if (millis() - condition_start > (uint32_t)max(condition_value, 0)) {
-   condition_value = 0;
+ if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
+   tl_delay_duration = 0;
    terra_lander_state_complete = true;
  }
 }
@@ -430,8 +430,8 @@ void Copter::terra_lander_roverDisengage_run() // COMPLETE
  * RELAY_ROVER_DISENGAGE.
  */
  loiter_run();
- if (millis() - condition_start > (uint32_t)max(condition_value, 0)) {
-   condition_value = 0;
+ if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
+   tl_delay_duration = 0;
    ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, RELAY_OFF);
    terra_lander_state_complete = true;
  }
@@ -445,8 +445,8 @@ void Copter::terra_lander_roverLand_run() // COMPLETE
  * TBD: Wait until touchdown switch is detected to be open
  */
  loiter_run();
- if (millis() - condition_start > (uint32_t)max(condition_value, 0)) {
-   condition_value = 0;
+ if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
+   tl_delay_duration = 0;
    terra_lander_state_complete = true;
  }
 }
@@ -458,8 +458,8 @@ void Copter::terra_lander_skyCraneDisengage_run() // COMPLETE
  * Wait for timer to expire and turn off RELAY_SKYCRANE_DISENGAGE
  */
  loiter_run();
- if (millis() - condition_start > (uint32_t)max(condition_value, 0)) {
-   condition_value = 0;
+ if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
+   tl_delay_duration = 0;
    ServoRelayEvents.do_set_relay(RELAY_SKYCRANE_DISENGAGE, RELAY_OFF);
    terra_lander_state_complete = true;
  }
