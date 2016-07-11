@@ -21,8 +21,10 @@
 #define RELAY1_PIN_DEFAULT 111
 #define RELAY2_PIN_DEFAULT -1
 #else
-#define RELAY1_PIN_DEFAULT 54
-#define RELAY2_PIN_DEFAULT 55
+#define RELAY1_PIN_DEFAULT 55
+#define RELAY2_PIN_DEFAULT 54
+#define RELAY3_PIN_DEFAULT 53
+#define RELAY4_PIN_DEFAULT 52
 #endif
 #elif CONFIG_HAL_BOARD == HAL_BOARD_VRBRAIN
 #define RELAY1_PIN_DEFAULT 33
@@ -53,21 +55,21 @@ const AP_Param::GroupInfo AP_Relay::var_info[] PROGMEM = {
     // @Description: Digital pin number for 3rd relay control.
     // @User: Standard
     // @Values: -1:Disabled,13:APM2 A9 pin,47:APM1 relay,50:Pixhawk AUXOUT1,51:Pixhawk AUXOUT2,52:Pixhawk AUXOUT3,53:Pixhawk AUXOUT4,54:Pixhawk AUXOUT5,55:Pixhawk AUXOUT6,111:PX4 FMU Relay1,112:PX4 FMU Relay2,113:PX4IO Relay1,114:PX4IO Relay2,115:PX4IO ACC1,116:PX4IO ACC2
-    AP_GROUPINFO("PIN3",  2, AP_Relay, _pin[2], -1),
+    AP_GROUPINFO("PIN3",  2, AP_Relay, _pin[2], RELAY3_PIN_DEFAULT),
 
     // @Param: PIN4
     // @DisplayName: Fourth Relay Pin
     // @Description: Digital pin number for 4th relay control.
     // @User: Standard
     // @Values: -1:Disabled,13:APM2 A9 pin,47:APM1 relay,50:Pixhawk AUXOUT1,51:Pixhawk AUXOUT2,52:Pixhawk AUXOUT3,53:Pixhawk AUXOUT4,54:Pixhawk AUXOUT5,55:Pixhawk AUXOUT6,111:PX4 FMU Relay1,112:PX4 FMU Relay2,113:PX4IO Relay1,114:PX4IO Relay2,115:PX4IO ACC1,116:PX4IO ACC2
-    AP_GROUPINFO("PIN4",  3, AP_Relay, _pin[3], -1),
+    AP_GROUPINFO("PIN4",  3, AP_Relay, _pin[3], RELAY4_PIN_DEFAULT),
 
     // @Param: DEFAULT
     // @DisplayName: Default relay state
-    // @Description: The state of the relay on boot. 
+    // @Description: The state of the relay on boot.
     // @User: Standard
     // @Values: 0:Off,1:On,2:NoChange
-    AP_GROUPINFO("DEFAULT",  4, AP_Relay, _default, 0),
+    AP_GROUPINFO("DEFAULT",  4, AP_Relay, _default, 1),
 
     AP_GROUPEND
 };
@@ -81,7 +83,7 @@ AP_Relay::AP_Relay(void)
 }
 
 
-void AP_Relay::init() 
+void AP_Relay::init()
 {
     for (uint8_t i=0; i<AP_RELAY_NUM_RELAYS; i++) {
         if (_pin[i].get() != -1) {
@@ -99,8 +101,8 @@ void AP_Relay::init()
     }
 }
 
-void AP_Relay::on(uint8_t relay) 
-{    
+void AP_Relay::on(uint8_t relay)
+{
     if (relay < AP_RELAY_NUM_RELAYS && _pin[relay] != -1) {
         hal.gpio->pinMode(_pin[relay], HAL_GPIO_OUTPUT);
         hal.gpio->write(_pin[relay], 1);
@@ -108,7 +110,7 @@ void AP_Relay::on(uint8_t relay)
 }
 
 
-void AP_Relay::off(uint8_t relay) 
+void AP_Relay::off(uint8_t relay)
 {
     if (relay < AP_RELAY_NUM_RELAYS && _pin[relay] != -1) {
         hal.gpio->pinMode(_pin[relay], HAL_GPIO_OUTPUT);
@@ -117,7 +119,7 @@ void AP_Relay::off(uint8_t relay)
 }
 
 
-void AP_Relay::toggle(uint8_t relay) 
+void AP_Relay::toggle(uint8_t relay)
 {
     if (relay < AP_RELAY_NUM_RELAYS && _pin[relay] != -1) {
         bool ison = hal.gpio->read(_pin[relay]);
@@ -127,4 +129,3 @@ void AP_Relay::toggle(uint8_t relay)
             on(relay);
     }
 }
-

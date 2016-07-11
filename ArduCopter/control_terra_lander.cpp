@@ -2,9 +2,10 @@
 
 #include "Copter.h"
 
+#define RELAY_SKYCRANE_DISENGAGE   0
+#define RELAY_CAMERA_ON            1
 #define RELAY_PISTON_DISENGAGE     2
 #define RELAY_ROVER_DISENGAGE      3
-#define RELAY_SKYCRANE_DISENGAGE   0
 
 #define RELAY_ON    0
 #define RELAY_OFF   1
@@ -168,7 +169,7 @@ void Copter::terra_lander_run()
 
 void Copter::terra_lander_standby_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Standby State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Standby State\n"));
   /*
    * Invoke startup_ground(true) to do all the calibration during start and
    * set the land altitude.
@@ -181,7 +182,7 @@ void Copter::terra_lander_standby_start()
 
 void Copter::terra_lander_readyForTakeoff_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Ready For Takeoff State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Ready For Takeoff State\n"));
   /*
    * Nothing to do when starting readyForTakeoff state.
    */
@@ -189,7 +190,7 @@ void Copter::terra_lander_readyForTakeoff_start()
 
 void Copter::terra_lander_inFlight_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: In Flight State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: In Flight State\n"));
 /*
  * No action to start
  */
@@ -197,7 +198,7 @@ void Copter::terra_lander_inFlight_start()
 
 void Copter::terra_lander_pastApogee_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Post Apogee State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Post Apogee State\n"));
 
 /*
  * No action to start
@@ -206,19 +207,21 @@ void Copter::terra_lander_pastApogee_start()
 
 void Copter::terra_lander_ejectFromPiston_start() // COMPLETE
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Eject From Piston State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Eject From Piston State\n"));
 
 /*
  * Turn on the RELAY_PISTON_DISENGAGE and start the timer to turn it off
  */
- ServoRelayEvents.do_set_relay(RELAY_PISTON_DISENGAGE, RELAY_ON);
+ if (ServoRelayEvents.do_set_relay(RELAY_PISTON_DISENGAGE, RELAY_ON) == false) {
+   gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Piston Disengage Relay ON failed\n"));
+ }
  tl_millis = millis();
  tl_delay_duration = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_freeFall_start() // COMPLETE
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Free Fall State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Free Fall State\n"));
 /*
  * Start the timer to let TerraLander free fall to let it free fall to steer away
  * from the descending Piston
@@ -229,46 +232,48 @@ void Copter::terra_lander_freeFall_start() // COMPLETE
 
 void Copter::terra_lander_stabilize_start() // COMPLETE
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Stabilize State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Stabilize State\n"));
 /*
  * Disable failsafe, arm and start the motors and start the ALT_HOLD mode
  */
  failsafe_disable();
  ahrs.set_correct_centrifugal(true);
  hal.util->set_soft_armed(true);
- //enable_motor_output();
- //motors.armed(true);
+ enable_motor_output();
+ motors.armed(true);
  althold_init(true);
  failsafe_enable();
 }
 
 void Copter::terra_lander_flyToRoverHome_start() // COMPLETE
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Fly To Rover Home State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Fly To Rover Home State\n"));
 /*
  * Switch to auto_init to let the AUTO mode steer the lander towards the Rover Landing point
  */
  if (!auto_init(true)) {
-   gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Auto mode failed to initialize\n"));
+   gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Auto mode failed to initialize\n"));
  }
 }
 
 void Copter::terra_lander_roverDisengage_start() // COMPLETE
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Rover Disengage State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Rover Disengage State\n"));
 /*
  * Start the LOITER mode
  * Turn on the RELAY_ROVER_DISENGAGE and start the timer to turn it off
  */
  loiter_init(true);
- ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, RELAY_ON);
+ if (ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, RELAY_ON) == false) {
+  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Rover Disengage Relay ON failed\n"));
+}
  tl_millis = millis();
  tl_delay_duration = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_roverLand_start()  // COMPLETE
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Free Fall State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Rover Landing State\n"));
 /*
  * Start the g.tl_rover_land_timeout timer and let the Rover lower itself
  */
@@ -278,18 +283,20 @@ void Copter::terra_lander_roverLand_start()  // COMPLETE
 
 void Copter::terra_lander_skyCraneDisengage_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Sky Crane Disengage State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Sky Crane Disengage State\n"));
 /*
  * Turn on the SkyCrane Separation Relay (#3) and start the timer to turn it off
  */
- ServoRelayEvents.do_set_relay(RELAY_SKYCRANE_DISENGAGE, RELAY_ON);
+ if (ServoRelayEvents.do_set_relay(RELAY_SKYCRANE_DISENGAGE, RELAY_ON) == false) {
+  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Skycrane Disengage Relay ON failed\n"));
+}
  tl_millis = millis();
  tl_delay_duration = g.tl_duration_burn;
 }
 
 void Copter::terra_lander_flyToLanderHome_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Fly To Lander Home State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Fly To Lander Home State\n"));
 /*
  * TBD: This state may not be needed if RTL works
  */
@@ -297,7 +304,7 @@ void Copter::terra_lander_flyToLanderHome_start()
 
 void Copter::terra_lander_landing_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Landing Start State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Landing Start State\n"));
 /*
  * Initiate return to home routine
  */
@@ -306,7 +313,7 @@ void Copter::terra_lander_landing_start()
 
 void Copter::terra_lander_landed_start()
 {
-  gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Landed State\n"));
+  gcs_send_text_P(SEVERITY_LOW,PSTR("TerraLander: Landed State\n"));
 /*
  * Nothing to do
  */
@@ -384,7 +391,9 @@ void Copter::terra_lander_ejectFromPiston_run()
  */
  if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
    tl_delay_duration = 0;
-   ServoRelayEvents.do_set_relay(RELAY_PISTON_DISENGAGE, RELAY_OFF);
+   if (ServoRelayEvents.do_set_relay(RELAY_PISTON_DISENGAGE, RELAY_OFF) == false) {
+    gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Piston Disengage Relay OFF failed\n"));
+  }
    terra_lander_state_complete = true;
  }
 }
@@ -432,7 +441,9 @@ void Copter::terra_lander_roverDisengage_run() // COMPLETE
  loiter_run();
  if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
    tl_delay_duration = 0;
-   ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, RELAY_OFF);
+   if (ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, RELAY_OFF) == false) {
+    gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Rover Disengage Relay OFF failed\n"));
+  }
    terra_lander_state_complete = true;
  }
 }
@@ -460,7 +471,9 @@ void Copter::terra_lander_skyCraneDisengage_run() // COMPLETE
  loiter_run();
  if (millis() - tl_millis > (uint32_t)max(tl_delay_duration, 0)) {
    tl_delay_duration = 0;
-   ServoRelayEvents.do_set_relay(RELAY_SKYCRANE_DISENGAGE, RELAY_OFF);
+   if (ServoRelayEvents.do_set_relay(RELAY_SKYCRANE_DISENGAGE, RELAY_OFF) == false) {
+    gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Skycrane Disengage Relay OFF failed\n"));
+  }
    terra_lander_state_complete = true;
  }
 }
