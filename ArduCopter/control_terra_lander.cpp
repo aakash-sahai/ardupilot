@@ -21,7 +21,7 @@
 bool Copter::terra_lander_init(bool ignore_checks)
 {
     if (position_ok() || ignore_checks) {
-        terra_lander_state = TerraLander_FreeFall;
+        terra_lander_state = TerraLander_PastApogee;
         terra_lander_state_complete = true;
         return true;
     } else {
@@ -266,7 +266,7 @@ void Copter::terra_lander_roverDisengage_start() // COMPLETE
  loiter_init(true);
  if (ServoRelayEvents.do_set_relay(RELAY_ROVER_DISENGAGE, RELAY_ON) == false) {
   gcs_send_text_P(SEVERITY_HIGH,PSTR("TerraLander: Rover Disengage Relay ON failed\n"));
-}
+ }
  tl_millis = millis();
  tl_delay_duration = g.tl_duration_burn;
 }
